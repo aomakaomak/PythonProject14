@@ -1,7 +1,6 @@
 import pandas as pd
 import datetime
 import logging
-from typing import Union
 
 
 def read_file(file_name: str) -> pd.DataFrame:
@@ -58,5 +57,27 @@ def begin_of_month(date_string: str) -> datetime.date:
 
     return first_day
 
-print(begin_of_month("2022-09-10 7:45:45"))
+# print(begin_of_month("2022-09-10 7:45:45"))
 
+def card_operations(df: pd.DataFrame) -> pd.DataFrame:
+    """Формируем расходы и кешбэк по каждой карте"""
+    expenses = df[(df["Сумма операции"]) < 0].copy()
+    expenses["Кэшбэк"] = expenses["Сумма операции"] * -0.01
+    new_df = expenses.groupby("Номер карты").agg({'Сумма операции с округлением': 'sum', 'Кэшбэк': 'sum'})
+    return new_df
+
+
+# df = read_file("data/operations.xlsx")
+
+# print(card_operations(df))
+
+def top_5_operations(df: pd.DataFrame) -> pd.DataFrame:
+    """Выводим топ-5 операций и оставляем только 4 столбца"""
+    expenses = df[(df["Сумма операции"]) < 0].copy()
+    top_df = expenses.sort_values(by='Сумма операции с округлением', ascending=False).head()
+    finally_top = top_df.loc[:, ["Дата платежа", "Сумма операции с округлением", "Категория", "Описание"]]
+    return finally_top
+
+df = read_file("data/operations.xlsx")
+
+print(top_5_operations(df))
