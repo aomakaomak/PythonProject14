@@ -27,10 +27,27 @@ isort = "^6.0.1"
 
 [tool.black]
 line-length = 119
+exclude = '''
+(
+  /(
+      \.eggs         # Исключить несколько общих каталогов
+    | \.git          # в корне проекта
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | dist
+  )/
+  | foo.py           # Также отдельно исключить файл с именем foo.py
+                     # в корне проекта
+)
+'''
 
 [tool.isort]
 line_length = 119
 
-[mypy]
-max-line-length = 119
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+exclude = 'venv'
 
