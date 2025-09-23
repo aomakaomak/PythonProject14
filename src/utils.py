@@ -1,6 +1,15 @@
 import pandas as pd
 import datetime
 import logging
+import requests
+import os
+from dotenv import load_dotenv
+import json
+
+load_dotenv()
+
+API_KEY_CURRENCY = os.getenv('API_KEY_CURRENCY')
+API_KEY_STOCK = os.getenv('API_KEY_STOCK')
 
 
 def read_file(file_name: str) -> pd.DataFrame:
@@ -68,7 +77,6 @@ def card_operations(df: pd.DataFrame) -> pd.DataFrame:
 
 
 # df = read_file("data/operations.xlsx")
-
 # print(card_operations(df))
 
 def top_5_operations(df: pd.DataFrame) -> pd.DataFrame:
@@ -78,6 +86,67 @@ def top_5_operations(df: pd.DataFrame) -> pd.DataFrame:
     finally_top = top_df.loc[:, ["Дата платежа", "Сумма операции с округлением", "Категория", "Описание"]]
     return finally_top
 
-df = read_file("data/operations.xlsx")
+# df = read_file("data/operations.xlsx")
+# print(top_5_operations(df))
 
-print(top_5_operations(df))
+
+
+def api_currency(currency: str) -> float:
+    """Получаем курс валют через API"""
+    url = f"https://api.apilayer.com/exchangerates_data/convert?to=RUB&from={currency}&amount=1"
+
+    payload = {}
+    headers= {
+      "apikey": API_KEY_CURRENCY
+    }
+    response = requests.request("GET", url, headers=headers, data = payload)
+    status_code = response.status_code
+    result = response.text
+    currencies = json.loads(result)
+    currency_price = currencies["result"]
+    return currency_price
+
+# currency_rate = api_currency("USD")
+# print(currency_rate)
+# print(type(currency_rate))
+
+
+def currency_rate(file: str) -> dict:
+    """Формируем словарь курсов валют"""
+    with open(file) as file:
+        file_load = json.load(file)
+        currencies = file_load['user_currencies']
+        rate = {}
+        for i in range(len(currencies)):
+            rate[currencies[i]] = api_currency(currencies[i])
+        return rate
+
+# print(currency_rate("data/user_settings.json"))
+
+def api_stock(stock: str) -> float:
+    """Получаем курс валют через API"""
+    url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={stock}&apikey={API_KEY_STOCK}"
+    response = requests.request("GET", url)
+    status_code = response.status_code
+    result = response.text
+    stocks = json.loads(result)
+    stock_price = stocks["Global Quote"]["05. price"]
+    return stock_price
+
+# print(api_stock("AAPL"))
+
+def stock_rate(file: str) -> dict:
+    """Формируем словарь курсов акций"""
+    with open(file) as file:
+        file_load = json.load(file)
+        stocks = file_load['user_stocks']
+        rate = {}
+        for i in range(len(stocks)):
+            rate[stocks[i]] = api_stock(stocks[i])
+        return rate
+
+# print(stock_rate("data/user_settings.json"))
+
+
+
+
