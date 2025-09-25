@@ -43,8 +43,6 @@ def main(date_time: str, file="data/operations.xlsx") -> str:
         })
 
 
-
-
     return json.dumps({
         "greeting": greeting_,
         "cards": cards,
@@ -54,6 +52,6 @@ def main(date_time: str, file="data/operations.xlsx") -> str:
     }, ensure_ascii=False, indent=4)
 
 
-print(main("2022-12-03 12:12:12"))
+# print(main("2022-12-03 12:12:12"))
 
 # main("2022-12-03 12:12:12")
