@@ -1,3 +1,5 @@
+from typing import Dict
+
 import pandas as pd
 import datetime
 import logging
@@ -15,6 +17,7 @@ API_KEY_STOCK = os.getenv('API_KEY_STOCK')
 def read_file(file_name: str) -> pd.DataFrame:
     """Читаем файл Эксель и возвращаем датафрейм"""
     df = pd.read_excel(file_name)
+    df["Номер карты"] = df["Номер карты"].replace("*","", regex=False)
     return df
 
 # print(read_file("data/operations.xlsx"))
@@ -68,23 +71,30 @@ def begin_of_month(date_string: str) -> datetime.date:
 
 # print(begin_of_month("2022-09-10 7:45:45"))
 
-def card_operations(df: pd.DataFrame) -> pd.DataFrame:
+def card_operations(df: pd.DataFrame) -> Dict:
     """Формируем расходы и кешбэк по каждой карте"""
     expenses = df[(df["Сумма операции"]) < 0].copy()
     expenses["Кэшбэк"] = expenses["Сумма операции"] * -0.01
     new_df = expenses.groupby("Номер карты").agg({'Сумма операции с округлением': 'sum', 'Кэшбэк': 'sum'})
-    return new_df
+    return new_df.to_dict()
+
 
 
 # df = read_file("data/operations.xlsx")
-# print(card_operations(df))
+# old_dict = (card_operations(df))
+# print(old_dict)
+# print(type(old_dict))
+#
+# new_dict = {}
+# new_dict["cards"] = old_dict['Сумма операции с округлением']
+# print(new_dict)
 
-def top_5_operations(df: pd.DataFrame) -> pd.DataFrame:
+def top_5_operations(df: pd.DataFrame) -> Dict:
     """Выводим топ-5 операций и оставляем только 4 столбца"""
     expenses = df[(df["Сумма операции"]) < 0].copy()
     top_df = expenses.sort_values(by='Сумма операции с округлением', ascending=False).head()
     finally_top = top_df.loc[:, ["Дата платежа", "Сумма операции с округлением", "Категория", "Описание"]]
-    return finally_top
+    return finally_top.to_dict()
 
 # df = read_file("data/operations.xlsx")
 # print(top_5_operations(df))
