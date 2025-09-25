@@ -116,11 +116,6 @@ def api_currency(currency: str) -> float:
     currency_price = currencies["result"]
     return currency_price
 
-# currency_rate = api_currency("USD")
-# print(currency_rate)
-# print(type(currency_rate))
-
-
 def currency_rate(file: str) -> dict:
     """Формируем словарь курсов валют"""
     with open(file) as file:

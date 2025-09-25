@@ -1,9 +1,10 @@
 import json
 
-from utils import greeting, card_operations, read_file, top_5_operations
+from utils import greeting, card_operations, read_file, top_5_operations, currency_rate, stock_rate
 
 
 def main(date_time: str, file="data/operations.xlsx") -> str:
+    """Формируем json-ответ из функций в utils.py"""
     greeting_ = greeting(date_time)
     data = read_file(file)
     oper = card_operations(data)
@@ -14,8 +15,6 @@ def main(date_time: str, file="data/operations.xlsx") -> str:
             "total_spent": oper["Сумма операции с округлением"][card],
             "cashback": oper["Кэшбэк"][card]
         })
-    # print(greeting_)
-    # print(cards)
 
     top5 = top_5_operations(data)
     top_op = []
@@ -27,11 +26,34 @@ def main(date_time: str, file="data/operations.xlsx") -> str:
             "description": top5["Описание"][operation]
         })
 
+    cur_rate = currency_rate("data/user_settings.json")
+    currencies_rates = []
+    for currency in cur_rate:
+        currencies_rates.append({
+            "currency": currency,
+            "rate": cur_rate[currency]
+        })
+
+    stock_r = stock_rate("data/user_settings.json")
+    stock_rates = []
+    for stock in stock_r:
+        stock_rates.append({
+            "stock": stock,
+            "price": stock_r[stock]
+        })
+
+
+
+
     return json.dumps({
         "greeting": greeting_,
         "cards": cards,
-        "top_transactions": top_op
+        "top_transactions": top_op,
+        "currency_rates": currencies_rates,
+        "stock_prices": stock_rates
     }, ensure_ascii=False, indent=4)
 
 
 print(main("2022-12-03 12:12:12"))
+
+# main("2022-12-03 12:12:12")
