@@ -13,7 +13,7 @@ def writer (func):
         """Декоратор, который записывает результат функции в заранее определенный файл"""
         result = func(*args, **kwargs)
         with open("data/reports.txt", "w", encoding="utf-8", newline="") as file:
-            result.to_string(file)
+            json.dump(result, file, ensure_ascii=False, indent=4)
         return result
 
     return wrapper
@@ -25,7 +25,7 @@ def writer_with_param(file_path):
         def inner(*args, **kwargs):
             result = func(*args, **kwargs)
             with open(file_path, "w", encoding="utf-8", newline="") as file:
-                result.to_string(file)
+                json.dump(result, file, ensure_ascii=False, indent=4)
             return result
         return inner
     return wrapper
@@ -64,7 +64,13 @@ def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Option
     filtered_data = data.loc[mask, ["Дата операции", "Категория", "Сумма операции"]]
     spend_to_category = filtered_data.groupby("Категория", as_index=False).sum("Сумма операции")
     result = spend_to_category.loc[spend_to_category["Категория"] == category]
-    return result
+    # result_new = {}
+    # for category in result:
+    #     result_new[result["Категория"][category]] = result["Сумма операции"][category]
+    result_new = {}
+    if not result.empty:
+        result_new[category] = float(result["Сумма операции"].iloc[0])
+    return result_new
 
 
 # result = last_3_months_operations(read_file("data/operations.xlsx"), "Супермаркеты", "25.01.2022 12:23:45")

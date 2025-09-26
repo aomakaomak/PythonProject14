@@ -5,7 +5,7 @@ import json
 from utils import read_file
 
 
-def benefit_categories(data: str, year: int, month: int) -> str:
+def benefit_categories(data: pd.DataFrame, year: int, month: int) -> str:
     """Принимаем месяц и год и выводим сколько кэшбэка заработано по каждой категории"""
     filtred_data = data.loc[:, ["Дата операции", "Категория", "Кэшбэк"]]
     dt = pd.to_datetime(filtred_data["Дата операции"], format="%d.%m.%Y %H:%M:%S")
