@@ -2,7 +2,6 @@ import json
 
 from utils import greeting, card_operations, read_file, top_5_operations, currency_rate, stock_rate
 
-
 def main(date_time: str, file="data/operations.xlsx") -> str:
     """Формируем json-ответ из функций в utils.py"""
     greeting_ = greeting(date_time)
@@ -53,5 +52,5 @@ def main(date_time: str, file="data/operations.xlsx") -> str:
 
 
 # print(main("2022-12-03 12:12:12"))
-
+#
 # main("2022-12-03 12:12:12")
