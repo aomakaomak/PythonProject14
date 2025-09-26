@@ -34,7 +34,7 @@ def writer_with_param(file_path):
 
 @writer_with_param("data/new_report.txt")
 @writer
-def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Optional[str] = None) -> pd.DataFrame:
+def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Optional[str] = None) -> dict:
     """
     Возвращает операции за последние 3 месяца до ref_date включительно.
 
@@ -64,9 +64,6 @@ def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Option
     filtered_data = data.loc[mask, ["Дата операции", "Категория", "Сумма операции"]]
     spend_to_category = filtered_data.groupby("Категория", as_index=False).sum("Сумма операции")
     result = spend_to_category.loc[spend_to_category["Категория"] == category]
-    # result_new = {}
-    # for category in result:
-    #     result_new[result["Категория"][category]] = result["Сумма операции"][category]
     result_new = {}
     if not result.empty:
         result_new[category] = float(result["Сумма операции"].iloc[0])
