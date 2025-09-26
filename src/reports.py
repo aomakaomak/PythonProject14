@@ -5,15 +5,42 @@ from typing import Optional
 from utils import read_file
 import datetime
 from dateutil.relativedelta import relativedelta
+import json
+
+def writer (func):
+
+    def wrapper(*args, **kwargs):
+        """Декоратор, который записывает результат функции в заранее определенный файл"""
+        result = func(*args, **kwargs)
+        with open("data/reports.txt", "w", encoding="utf-8", newline="") as file:
+            result.to_string(file)
+        return result
+
+    return wrapper
 
 
+def writer_with_param(file_path):
+    """Декоратор, в параметр которого записывается имя файла для записи результата работы функции"""
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            result = func(*args, **kwargs)
+            with open(file_path, "w", encoding="utf-8", newline="") as file:
+                result.to_string(file)
+            return result
+        return inner
+    return wrapper
+
+
+
+@writer_with_param("data/new_report.txt")
+@writer
 def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Optional[str] = None) -> pd.DataFrame:
     """
     Возвращает операции за последние 3 месяца до ref_date включительно.
 
     :param data: DataFrame с колонкой 'Дата операции'
     :param category: указываем нужную категорию
-    :param date: строка с датой, например '2021-12-31'
+    :param ref_date: строка с датой, например '2021-12-31'
     :return: DataFrame с отфильтрованными операциями
     """
     # Преобразуем колонку к datetime (учитываем формат из Excel)
