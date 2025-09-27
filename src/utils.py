@@ -14,7 +14,7 @@ API_KEY_CURRENCY = os.getenv('API_KEY_CURRENCY')
 API_KEY_STOCK = os.getenv('API_KEY_STOCK')
 
 
-logger = logging.getLogger("services")
+logger = logging.getLogger("utils")
 logger.setLevel(logging.INFO)
 file_handler = logging.FileHandler("logs/reports.log", encoding="UTF-8")
 file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -24,6 +24,7 @@ logger.addHandler(file_handler)
 
 def read_file(file_name: str) -> pd.DataFrame:
     """Читаем файл Эксель и возвращаем датафрейм"""
+    logger.info("Читаем файл")
     df = pd.read_excel(file_name)
     df["Номер карты"] = df["Номер карты"].replace("*","", regex=False)
     return df
@@ -35,7 +36,7 @@ def greeting(date_string: str) -> str:
     try:
         date_obj = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
     except ValueError as e:
-        logging.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
+        logger.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
         raise ValueError(f"Неверный формат даты: {date_string}. Ошибка: {e}") from e
     if 0 <= date_obj.hour <= 6:
         our_greeting = "Доброй ночи"
@@ -56,7 +57,7 @@ def date_now(date_string: str) -> datetime.date:
     try:
         date_obj = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
     except ValueError as e:
-        logging.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
+        logger.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
         raise ValueError(f"Неверный формат даты: {date_string}. Ошибка: {e}") from e
     date_now = date_obj.date()
     return date_now
@@ -69,7 +70,7 @@ def begin_of_month(date_string: str) -> datetime.date:
     try:
         date_obj = datetime.datetime.strptime(date_string, "%Y-%m-%d %H:%M:%S")
     except ValueError as e:
-        logging.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
+        logger.error(f"Неверный формат даты: {date_string}. Ошибка: {e}")
         raise ValueError(f"Неверный формат даты: {date_string}. Ошибка: {e}") from e
     year = date_obj.year
     month = date_obj.month
@@ -81,6 +82,7 @@ def begin_of_month(date_string: str) -> datetime.date:
 
 def card_operations(df: pd.DataFrame) -> Dict:
     """Формируем расходы и кешбэк по каждой карте"""
+    logger.info("Формируем расходы")
     expenses = df[(df["Сумма операции"]) < 0].copy()
     expenses["Кэшбэк"] = expenses["Сумма операции"] * -0.01
     new_df = expenses.groupby("Номер карты").agg({'Сумма операции с округлением': 'sum', 'Кэшбэк': 'sum'})
@@ -99,6 +101,7 @@ def card_operations(df: pd.DataFrame) -> Dict:
 
 def top_5_operations(df: pd.DataFrame) -> Dict:
     """Выводим топ-5 операций и оставляем только 4 столбца"""
+    logger.info("выводим операции")
     expenses = df[(df["Сумма операции"]) < 0].copy()
     top_df = expenses.sort_values(by='Сумма операции с округлением', ascending=False).head()
     finally_top = top_df.loc[:, ["Дата платежа", "Сумма операции с округлением", "Категория", "Описание"]]
@@ -111,6 +114,7 @@ def top_5_operations(df: pd.DataFrame) -> Dict:
 
 def api_currency(currency: str) -> float:
     """Получаем курс валют через API"""
+    logger.info("Обращаемся к API")
     url = f"https://api.apilayer.com/exchangerates_data/convert?to=RUB&from={currency}&amount=1"
 
     payload = {}
@@ -126,6 +130,7 @@ def api_currency(currency: str) -> float:
 
 def currency_rate(file: str) -> dict:
     """Формируем словарь курсов валют"""
+    logger.info("Получаем курсы валют")
     with open(file) as file:
         file_load = json.load(file)
         currencies = file_load['user_currencies']
@@ -138,6 +143,7 @@ def currency_rate(file: str) -> dict:
 
 def api_stock(stock: str) -> float:
     """Получаем курс валют через API"""
+    logger.info("Обращаемся к API")
     url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={stock}&apikey={API_KEY_STOCK}"
     response = requests.request("GET", url)
     status_code = response.status_code
@@ -150,6 +156,7 @@ def api_stock(stock: str) -> float:
 
 def stock_rate(file: str) -> dict:
     """Формируем словарь курсов акций"""
+    logger.info("Получаем цену акций")
     with open(file) as file:
         file_load = json.load(file)
         stocks = file_load['user_stocks']

@@ -1,9 +1,19 @@
 import json
+import logging
 
 from utils import greeting, card_operations, read_file, top_5_operations, currency_rate, stock_rate
 
+logger = logging.getLogger("views")
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler("logs/reports.log", encoding="UTF-8")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
+
 def main(date_time: str, file="data/operations.xlsx") -> str:
     """Формируем json-ответ из функций в utils.py"""
+    logger.info("Формируем json-ответ")
     greeting_ = greeting(date_time)
     data = read_file(file)
     oper = card_operations(data)
