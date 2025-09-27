@@ -14,6 +14,14 @@ API_KEY_CURRENCY = os.getenv('API_KEY_CURRENCY')
 API_KEY_STOCK = os.getenv('API_KEY_STOCK')
 
 
+logger = logging.getLogger("services")
+logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler("logs/reports.log", encoding="UTF-8")
+file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+logger.addHandler(file_handler)
+
+
 def read_file(file_name: str) -> pd.DataFrame:
     """Читаем файл Эксель и возвращаем датафрейм"""
     df = pd.read_excel(file_name)
