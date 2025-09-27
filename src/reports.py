@@ -1,12 +1,12 @@
-from time import strptime
-
-import pandas as pd
-from typing import Optional
-from utils import read_file
 import datetime
-from dateutil.relativedelta import relativedelta
 import json
 import logging
+from typing import Optional
+
+import pandas as pd
+from dateutil.relativedelta import relativedelta
+
+from utils import read_file
 
 # logging.basicConfig(level=logging.DEBUG,
 #                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -20,7 +20,8 @@ file_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(m
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
 
-def writer (func):
+
+def writer(func):
 
     def wrapper(*args, **kwargs):
         """Декоратор, который записывает результат функции в заранее определенный файл"""
@@ -34,15 +35,17 @@ def writer (func):
 
 def writer_with_param(file_path):
     """Декоратор, в параметр которого записывается имя файла для записи результата работы функции"""
+
     def wrapper(func):
         def inner(*args, **kwargs):
             result = func(*args, **kwargs)
             with open(file_path, "w", encoding="utf-8", newline="") as file:
                 json.dump(result, file, ensure_ascii=False, indent=4)
             return result
-        return inner
-    return wrapper
 
+        return inner
+
+    return wrapper
 
 
 @writer_with_param("data/new_report.txt")
@@ -61,9 +64,7 @@ def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Option
         logger.info(f"Выполняем запрос к датафрейму {data}")
         data = data.copy()
 
-        data["Дата операции"] = pd.to_datetime(
-            data["Дата операции"], format="%d.%m.%Y %H:%M:%S", errors="coerce"
-        )
+        data["Дата операции"] = pd.to_datetime(data["Дата операции"], format="%d.%m.%Y %H:%M:%S", errors="coerce")
         if ref_date is None or ref_date == "":
             ref_date = datetime.datetime.today()
         else:
@@ -92,7 +93,3 @@ def last_3_months_operations(data: pd.DataFrame, category: str, ref_date: Option
 
 result = last_3_months_operations(read_file("data/operations.xlsx"), "Супермаркеты", "25.01.2022 12:23:45")
 print(result)
-
-
-
-

@@ -1,8 +1,9 @@
-from views import main
-from services import benefit_categories
-from reports import last_3_months_operations
-from utils import read_file
 import logging
+
+from reports import last_3_months_operations
+from services import benefit_categories
+from utils import read_file
+from views import main
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.INFO)
@@ -30,7 +31,5 @@ def main_func():
         logging.error(f"Возникла ошибка '{e}'")
         return f"Запрос выполнить не удалось. Ошибка '{e}'"
 
+
 main_func()
-
-
-

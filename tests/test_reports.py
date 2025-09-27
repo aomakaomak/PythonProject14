@@ -1,35 +1,40 @@
+import json
+from unittest.mock import mock_open, patch
+
 import pandas as pd
 import pytest
-from src.reports import last_3_months_operations
-from unittest.mock import patch, mock_open
-from src.reports import writer
-import json
+
+from src.reports import last_3_months_operations, writer
+from src.reports import writer_with_param
+
 
 def _sample_df():
     # Формат дат как в Excel: "%d.%m.%Y %H:%M:%S"
-    return pd.DataFrame({
-        "Дата операции": [
-            "15.05.2024 00:00:00",  # ровно на границе старта окна -> ИСКЛЮЧЕНО (>)
-            "16.05.2024 00:00:00",  # внутри окна -> ВКЛЮЧЕНО
-            "01.06.2024 12:00:00",  # внутри окна -> ВКЛЮЧЕНО
-            "15.08.2024 00:00:00",  # ровно на верхней границе -> ВКЛЮЧЕНО (≤)
-            "16.08.2024 00:00:00",  # за верхней границей -> ИСКЛЮЧЕНО
-        ],
-        "Категория": [
-            "Продукты",
-            "Продукты",
-            "АЗС",
-            "Продукты",
-            "Продукты",
-        ],
-        "Сумма операции": [
-            -1.0,   # исключено
-            -2.0,   # включено
-            -5.0,   # включено, но в другой категории
-            -3.0,   # включено
-            -4.0,   # исключено
-        ],
-    })
+    return pd.DataFrame(
+        {
+            "Дата операции": [
+                "15.05.2024 00:00:00",  # ровно на границе старта окна -> ИСКЛЮЧЕНО (>)
+                "16.05.2024 00:00:00",  # внутри окна -> ВКЛЮЧЕНО
+                "01.06.2024 12:00:00",  # внутри окна -> ВКЛЮЧЕНО
+                "15.08.2024 00:00:00",  # ровно на верхней границе -> ВКЛЮЧЕНО (≤)
+                "16.08.2024 00:00:00",  # за верхней границей -> ИСКЛЮЧЕНО
+            ],
+            "Категория": [
+                "Продукты",
+                "Продукты",
+                "АЗС",
+                "Продукты",
+                "Продукты",
+            ],
+            "Сумма операции": [
+                -1.0,  # исключено
+                -2.0,  # включено
+                -5.0,  # включено, но в другой категории
+                -3.0,  # включено
+                -4.0,  # исключено
+            ],
+        }
+    )
 
 
 def test_last_3_months_operations_filters_and_sums_by_category():
@@ -54,10 +59,12 @@ def test_last_3_months_operations_no_ref_date_uses_today(monkeypatch):
 
     # Зафиксируем "сегодня" как 15.08.2024 00:00:00
     import datetime as _dt
+
     class FixedDateTime(_dt.datetime):
         @classmethod
         def today(cls):
             return cls(2024, 8, 15, 0, 0, 0)
+
     # Патчим именно класс datetime в модуле src.utils
     monkeypatch.setattr("src.utils.datetime.datetime", FixedDateTime)
 
@@ -69,9 +76,6 @@ def test_last_3_months_operations_unknown_category_returns_empty():
     df = _sample_df()
     out = last_3_months_operations(df, category="Кафе", ref_date="2024-08-15")
     assert out == {}
-
-
-
 
 
 def test_writer_writes_json_and_returns_result():
@@ -112,19 +116,13 @@ def test_writer_does_not_write_when_function_raises():
     mopen.assert_not_called()
 
 
-import json
-import pytest
-from unittest.mock import patch, mock_open
-
-# поправьте импорт под ваш проект:
-# from src.reports import writer_with_param
-from src.reports import writer_with_param
-
-
-@pytest.mark.parametrize("path", [
-    "data/reports1.json",
-    "out/custom.json",
-])
+@pytest.mark.parametrize(
+    "path",
+    [
+        "data/reports1.json",
+        "out/custom.json",
+    ],
+)
 def test_writer_with_param_writes_json_to_given_path_and_returns_result(path):
     payload = {"ok": True, "items": [1, 2, 3]}
 

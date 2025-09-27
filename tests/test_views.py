@@ -1,6 +1,8 @@
 import json
-from unittest.mock import patch, Mock
+from unittest.mock import patch
+
 from src.views import main
+
 
 def test_main_builds_expected_json_with_all_apis_mocked():
     # --- Подготавливаем фейковые данные ---
@@ -23,12 +25,14 @@ def test_main_builds_expected_json_with_all_apis_mocked():
     fake_stock_rate = {"AAPL": "123.45", "MSFT": "321.00"}
 
     # --- Мокаем все функции внутри src.views ---
-    with patch("src.views.greeting", return_value=fake_greeting), \
-         patch("src.views.read_file", return_value=fake_df), \
-         patch("src.views.card_operations", return_value=fake_card_ops), \
-         patch("src.views.top_5_operations", return_value=fake_top5), \
-         patch("src.views.currency_rate", return_value=fake_currency_rate), \
-         patch("src.views.stock_rate", return_value=fake_stock_rate):
+    with (
+        patch("src.views.greeting", return_value=fake_greeting),
+        patch("src.views.read_file", return_value=fake_df),
+        patch("src.views.card_operations", return_value=fake_card_ops),
+        patch("src.views.top_5_operations", return_value=fake_top5),
+        patch("src.views.currency_rate", return_value=fake_currency_rate),
+        patch("src.views.stock_rate", return_value=fake_stock_rate),
+    ):
 
         result = main("2024-06-01 12:00:00", file="fake.xlsx")
         parsed = json.loads(result)
@@ -42,10 +46,8 @@ def test_main_builds_expected_json_with_all_apis_mocked():
     ]
 
     assert parsed["top_transactions"] == [
-        {"date": "2024-06-01 10:00:00", "amount": -10,
-         "category": "Кафе", "description": "Кофе"},
-        {"date": "2024-06-02 11:00:00", "amount": -5,
-         "category": "Такси", "description": "Поездка"},
+        {"date": "2024-06-01 10:00:00", "amount": -10, "category": "Кафе", "description": "Кофе"},
+        {"date": "2024-06-02 11:00:00", "amount": -5, "category": "Такси", "description": "Поездка"},
     ]
 
     assert parsed["currency_rates"] == [
